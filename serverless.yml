@@ -9,6 +9,9 @@ provider:
   name: aws
   runtime: nodejs20.x
 
+plugins:
+ - serverless-offline
+
 functions:
   hello:
     handler: handler.hello
