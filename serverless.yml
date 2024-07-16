@@ -19,7 +19,7 @@ functions:
       - httpApi:
           path: /
           method: get
-  post_responses:
+  post-responses:
     handler: user.postResponses
     events:
       - httpApi:
