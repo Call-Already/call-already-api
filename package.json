@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "prettier": "3.3.3",
     "serverless-offline": "^13.6.0"
   }
 }
