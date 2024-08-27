@@ -8,6 +8,8 @@ service: call-already-api
 provider:
   name: aws
   runtime: nodejs20.x
+  environment: 
+    tableName: ${self:custom.tableName}
 
 plugins:
  - serverless-offline
@@ -25,3 +27,20 @@ functions:
       - httpApi:
           path: /post-responses
           method: post
+
+custom:
+  tableName: user-groups
+
+resources:
+  Resources:
+    UsersDynamoDbTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tableName}
+        AttributeDefinitions:
+          - AttributeName: ID
+            AttributeType: S
+        KeySchema:
+          - AttributeName: ID
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
