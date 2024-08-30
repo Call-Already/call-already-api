@@ -16,7 +16,7 @@ const Dynamo = {
       .promise();
 
     if (!data || !data.Item) {
-      throw Error(`There was an error fetching the data for ID=${ID} from Table=${Table}`)
+      console.log(`There was an error fetching the data for ID=${ID} from Table=${TableName}`);
     }
 
     return data.Item;

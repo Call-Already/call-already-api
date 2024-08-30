@@ -10,6 +10,12 @@ provider:
   runtime: nodejs20.x
   environment: 
     tableName: ${self:custom.tableName}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+        - ses:*
+      Resource: '*'
 
 plugins:
  - serverless-offline
@@ -21,6 +27,12 @@ functions:
       - httpApi:
           path: /
           method: get
+  create-group:
+    handler: user.createGroup
+    events:
+      - httpApi:
+          path: /create-group
+          method: post
   post-responses:
     handler: user.postResponses
     events:
