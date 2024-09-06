@@ -1,9 +1,37 @@
 const Dynamo = require('./common/Dynamo');
 const { _400, _200, _500 } = require('./common/Responses');
 const SES = require('./common/SES');
-const validatePostResponsesParams = require('./common/validation');
+const { validatePostResponsesParams, validateValidateGroupParams } = require('./common/validation');
 
 const tableName = process.env.tableName;
+
+exports.validateGroup = async (event) => {
+  const queryParameters = event.queryStringParameters;
+
+  validateValidateGroupParams(queryParameters);
+
+  // First, get the existing entry if it exists
+  const entry = await Dynamo.get(queryParameters.ID, tableName);
+
+  if (entry) {
+    // Collect the users to show the user who they're joining
+    const userNicknames = [];
+
+    for (var user in entry.Users) {
+      userNicknames.push(entry.Users[user].Nickname);
+    }
+
+    const responseBody = {
+        UserNicknames: userNicknames,
+        NumUsers: entry.NumUsers
+    };
+
+    return _200(responseBody);
+  } else {
+    console.log(`Could not validate a group exists ${queryParameters.ID}`);
+    return _400(`Group ${queryParameters.ID} does not exist.`);
+  }
+}
 
 exports.createGroup = async (event) => {
   const body = JSON.parse(event.body);
@@ -32,6 +60,8 @@ exports.createGroup = async (event) => {
 
 exports.postResponses = async (event) => {
   const body = JSON.parse(event.body);
+
+  console.log(body);
 
   validatePostResponsesParams(body);
 

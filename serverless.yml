@@ -21,11 +21,11 @@ plugins:
  - serverless-offline
 
 functions:
-  hello:
-    handler: handler.hello
+  validate-group:
+    handler: user.validateGroup
     events:
       - httpApi:
-          path: /
+          path: /validate-group
           method: get
   create-group:
     handler: user.createGroup
