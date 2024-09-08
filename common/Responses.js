@@ -14,6 +14,15 @@ const _400 = (message) => {
   }
 };
 
+const _404 = (message) => {
+  return {
+    statusCode: 404,
+    body: JSON.stringify({
+      message: message
+    }),
+  }
+}
+
 const _500 = (message) => {
   return {
     statusCode: 500,
@@ -23,4 +32,4 @@ const _500 = (message) => {
   }
 };
 
-module.exports = {_200, _400, _500};
+module.exports = {_200, _400, _404, _500};

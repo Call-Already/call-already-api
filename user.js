@@ -1,5 +1,5 @@
 const Dynamo = require('./common/Dynamo');
-const { _400, _200, _500 } = require('./common/Responses');
+const { _200, _400, _404, _500 } = require('./common/Responses');
 const SES = require('./common/SES');
 const { validatePostResponsesParams, validateValidateGroupParams } = require('./common/validation');
 
@@ -14,6 +14,11 @@ exports.validateGroup = async (event) => {
   const entry = await Dynamo.get(queryParameters.ID, tableName);
 
   if (entry) {
+
+    if (entry.Users && entry.Users.length >= entry.NumUsers) {
+      return _400(`Group ${queryParameters.ID} is already full.`);
+    }
+
     // Collect the users to show the user who they're joining
     const userNicknames = [];
 
@@ -22,14 +27,15 @@ exports.validateGroup = async (event) => {
     }
 
     const responseBody = {
+        Dates: entry.Dates,
         UserNicknames: userNicknames,
-        NumUsers: entry.NumUsers
+        NumUsers: entry.NumUsers,
     };
 
     return _200(responseBody);
   } else {
     console.log(`Could not validate a group exists ${queryParameters.ID}`);
-    return _400(`Group ${queryParameters.ID} does not exist.`);
+    return _404(`Group ${queryParameters.ID} does not exist.`);
   }
 }
 
@@ -41,11 +47,12 @@ exports.createGroup = async (event) => {
 
   // Return a retry code as the group somehow exists already.
   if (existingEntry) {
-    return _400(`Group already exists. Try making a group with a different code.`);
+    return _400(`Group ${body.ID} already exists. Try making a group with a different code.`);
   }
 
   const entry = {
     ID: body.ID,
+    Dates: body.Dates,
     NumUsers: body.NumUsers,
     ShowUsers: body.ShowUsers,
   };
@@ -70,7 +77,7 @@ exports.postResponses = async (event) => {
 
   // Expect the entry to exist already, if not, return bad request.
   if (!entry) {
-    return _400(`Could not find existing group of ID ${body.ID}`);
+    return _404(`Could not find existing group of ID ${body.ID}`);
   }
 
   // Prepare the memory users object, remove the existing user if there.
