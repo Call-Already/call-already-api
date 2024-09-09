@@ -14,11 +14,7 @@ provider:
     - Effect: Allow
       Action:
         - dynamodb:*
-        - ses:*
       Resource: '*'
-
-plugins:
- - serverless-offline
 
 functions:
   validate-group:

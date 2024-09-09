@@ -1,19 +1,21 @@
-const AWS = require('aws-sdk');
+const { DynamoDB } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocument } = require("@aws-sdk/lib-dynamodb");
 
-const documentClient = new AWS.DynamoDB.DocumentClient();
+const dynamoDbClient = new DynamoDB({region: "us-east-1"});
+const documentClient = DynamoDBDocument.from(dynamoDbClient);
 
 const Dynamo = {
   async get(ID, TableName) {
     const params = {
-      TableName,
+      TableName: TableName,
       Key: {
-        ID
+        ID: ID
       }
     }
 
-    const data = await documentClient
-      .get(params)
-      .promise();
+    const data = await documentClient.get(params);
+
+    console.log(data);
 
     if (!data || !data.Item) {
       console.log(`There was an error fetching the data for ID=${ID} from Table=${TableName}`);
@@ -28,9 +30,10 @@ const Dynamo = {
       Item: data,
     }
 
+    console.log(params);
+
     await documentClient
-      .put(params)
-      .promise();
+      .put(params);
   }
 };
 

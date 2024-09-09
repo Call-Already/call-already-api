@@ -1,5 +1,14 @@
 {
-  "devDependencies": {
-    "serverless-offline": "^13.6.0"
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.645.0",
+    "@aws-sdk/lib-dynamodb": "^3.645.0",
+    "@aws-sdk/util-dynamodb": "^3.645.0",
+    "@smithy/util-base64": "2.2.1"
+  },
+  "overrides": {
+    "@smithy/util-base64": "2.2.1",
+    "@aws-sdk/client-dynamodb": {
+      "@smithy/util-base64": "2.1.1"
+    }
   }
 }

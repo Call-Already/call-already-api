@@ -1,6 +1,5 @@
 const Dynamo = require('./common/Dynamo');
 const { _200, _400, _404, _500 } = require('./common/Responses');
-const SES = require('./common/SES');
 const { validatePostResponsesParams, validateValidateGroupParams } = require('./common/validation');
 
 const tableName = process.env.tableName;
@@ -117,11 +116,10 @@ exports.postResponses = async (event) => {
     text: "Test email"
   }
 
-  const result = await SES.send(emailParams);
+  return _200();
+  // if (result) {
 
-  if (result) {
-    return _200();
-  } else {
-    return _500(`Post responses failed, unable to send email ${emailParams}`);
-  }
+  // } else {
+  //   return _500(`Post responses failed, unable to send email ${emailParams}`);
+  // }
 };
