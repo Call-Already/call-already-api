@@ -1,6 +1,6 @@
 const Dynamo = require('./common/Dynamo');
 const { _200, _400, _404, _500 } = require('./common/Responses');
-const { validatePostResponsesParams, validateValidateGroupParams } = require('./common/validation');
+const { validatePostResponsesParams, validateValidateGroupParams } = require('./common/Validation');
 
 const tableName = process.env.tableName;
 

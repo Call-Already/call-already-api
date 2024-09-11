@@ -10,6 +10,7 @@ provider:
   runtime: nodejs20.x
   environment: 
     tableName: ${self:custom.tableName}
+    registryTableName: ${self:custom.registryTableName}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -35,9 +36,28 @@ functions:
       - httpApi:
           path: /post-responses
           method: post
+  register:
+    handler: registration.register
+    events:
+      - httpApi:
+          path: /register
+          method: post
+  verifyEmail:
+    handler: registration.verifyEmail
+    events:
+      - httpApi:
+          path: /verify-email
+          method: get
+  loginUser:
+    handler: registration.loginUser
+    events:
+      - httpApi:
+          path: /login-user
+          method: post
 
 custom:
   tableName: user-groups
+  registryTableName: user-registry
 
 resources:
   Resources:
@@ -50,5 +70,16 @@ resources:
             AttributeType: S
         KeySchema:
           - AttributeName: ID
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    UserRegistryDynamoDbTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.registryTableName}
+        AttributeDefinitions:
+          - AttributeName: Email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: Email
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST

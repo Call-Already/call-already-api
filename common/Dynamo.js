@@ -24,6 +24,25 @@ const Dynamo = {
     return data.Item;
   },
 
+  async getUser(Email, TableName) {
+    const params = {
+      TableName: TableName,
+      Key: {
+        Email: Email
+      }
+    }
+
+    const data = await documentClient.get(params);
+
+    console.log(data);
+
+    if (!data || !data.Item) {
+      console.log(`There was an error fetching the data for Email=${Email} from Table=${TableName}`);
+    }
+
+    return data.Item;
+  },
+
   async put(data, TableName) {
     const params = {
       TableName,
