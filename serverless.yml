@@ -5,12 +5,42 @@ app: call-already-api
 # "service" is the name of this project. This will also be added to your AWS resource names.
 service: call-already-api
 
+stages:
+  prod: # Rename to whatever your production Stage is to ensure Observability is enabled.
+    observability: false
+  default: # This will disable observability for every Stage other than your production Stage.
+    observability: false 
+
+package:
+  excludeDevDependencies: true
+  exclude:
+    - node_modules/aws-sdk/**
+
+### DO NOT CHECK IN
+### DO NOT CHECK IN
+### DO NOT CHECK IN
+### DO NOT CHECK IN
+### DO NOT CHECK IN
+#
+# Uncomment this when locally testing
+# plugins:
+#   - serverless-offline
+#
+### DO NOT CHECK IN
+### DO NOT CHECK IN
+### DO NOT CHECK IN
+### DO NOT CHECK IN
+### DO NOT CHECK IN
+
 provider:
   name: aws
   runtime: nodejs20.x
-  environment: 
+  httpApi: 
+    cors: true
+  environment:
     tableName: ${self:custom.tableName}
     registryTableName: ${self:custom.registryTableName}
+    jwtSecretAccessToken: ${param:jwtSecretAccessToken}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -58,6 +88,11 @@ functions:
 custom:
   tableName: user-groups
   registryTableName: user-registry
+  bundle:
+    forceExclude:
+      - "@aws-sdk/client-dynamodb"
+      - "@aws-sdk/lib-dynamodb"
+      - "@aws-sdk/util-dynamodb"
 
 resources:
   Resources:

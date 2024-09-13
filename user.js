@@ -1,4 +1,5 @@
 const Dynamo = require('./common/Dynamo');
+const { sendConfirmationEmail } = require('./common/Email');
 const { _200, _400, _404, _500 } = require('./common/Responses');
 const { validatePostResponsesParams, validateValidateGroupParams } = require('./common/Validation');
 
@@ -103,23 +104,17 @@ exports.postResponses = async (event) => {
     return _500(`Error saving responses ${body}`)
   });
 
-  // Handle max users already being reached,
+  // Handle max users being reached,
   // send email with time confirmation to all.
   if (entry.NumUsers === entry.Users.length) {
     
   }
 
-  const emailParams = {
-    to: "hi@mattyphillips.com",
-    from: "hi@mattyphillips.com",
-    subject: "Call Already Email",
-    text: "Test email"
+  try {
+    // await sendConfirmationEmail(body.Nickname, body.Email, body.ID);
+    return _200();
+  } catch (error) {
+    console.log("Error sending confirmation email", error);
+    return _500(`Error sending confirmation email ${body}`)
   }
-
-  return _200();
-  // if (result) {
-
-  // } else {
-  //   return _500(`Post responses failed, unable to send email ${emailParams}`);
-  // }
 };
