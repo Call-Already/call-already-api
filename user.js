@@ -1,5 +1,5 @@
 const Dynamo = require('./common/Dynamo');
-const { sendConfirmationEmail } = require('./common/Email');
+const { sendScheduleEmails } = require('./common/Email');
 const { _200, _400, _404, _500 } = require('./common/Responses');
 const { validatePostResponsesParams, validateValidateGroupParams } = require('./common/Validation');
 
@@ -107,7 +107,8 @@ exports.postResponses = async (event) => {
   // Handle max users being reached,
   // send email with time confirmation to all.
   if (entry.NumUsers === entry.Users.length) {
-    
+    const commonTime = await sendScheduleEmails(entry.Users, body.ID);
+    return _200(commonTime);
   }
 
   try {

@@ -23,8 +23,8 @@ package:
 ### DO NOT CHECK IN
 #
 # Uncomment this when locally testing
-# plugins:
-#   - serverless-offline
+plugins:
+  - serverless-offline
 #
 ### DO NOT CHECK IN
 ### DO NOT CHECK IN
