@@ -9,18 +9,24 @@ const PERFECT_CALL = "perfect";
 const IMPERFECT_CALL = "imperfect";
 
 exports.sendWelcomeEmail = async (nickname, email, userId) => {
-  await client.sendEmailWithTemplate({
-    "From": fromEmail,
-    "To": email,
-    "TemplateAlias": "welcome",
-    "TemplateModel": {
-      "nickname": nickname,
-      "verify_link": `https://callalready.com/verify-email?Email=${email}&UserID=${userId}`,
-      "email": email,
-      "help_url": "https://callalready.com/overview",
-    },
-    "MessageStream": "welcome"
-  });
+  try {
+    await client.sendEmailWithTemplate({
+      "From": fromEmail,
+      "To": email,
+      "TemplateAlias": "welcome",
+      "TemplateModel": {
+        "nickname": nickname,
+        "verify_link": `https://callalready.com/verify-email?Email=${email}&UserID=${userId}`,
+        "email": email,
+        "help_url": "https://callalready.com/overview",
+      },
+      "MessageStream": "welcome"
+    });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 }
 
 exports.sendConfirmationEmail = async (nickname, email, groupCode) => {
@@ -43,31 +49,43 @@ exports.sendConfirmationEmail = async (nickname, email, groupCode) => {
 }
 
 const sendFailureEmail = async (nickname, email, groupCode) => {
-  return client.sendEmailWithTemplate({
-    "From": fromEmail,
-    "To": email,
-    "TemplateAlias": "failure",
-    "TemplateModel": {
-      "nickname": nickname,
-      "group_code": groupCode,
-    },
-    "MessageStream": "failure"
-  });
+  try {
+    await client.sendEmailWithTemplate({
+      "From": fromEmail,
+      "To": email,
+      "TemplateAlias": "failure",
+      "TemplateModel": {
+        "nickname": nickname,
+        "group_code": groupCode,
+      },
+      "MessageStream": "failure"
+    });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 }
 
 const sendScheduleEmail = async (nickname, email, groupCode, localTime, timezone) => {
-  return client.sendEmailWithTemplate({
-    "From": fromEmail,
-    "To": email,
-    "TemplateAlias": "schedule",
-    "TemplateModel": {
-      "nickname": nickname,
-      "group_code": groupCode,
-      "local_date_time": localTime,
-      "timezone": timezone
-    },
-    "MessageStream": "schedule"
-  });
+  try {
+    await client.sendEmailWithTemplate({
+      "From": fromEmail,
+      "To": email,
+      "TemplateAlias": "schedule",
+      "TemplateModel": {
+        "nickname": nickname,
+        "group_code": groupCode,
+        "local_date_time": localTime,
+        "timezone": timezone
+      },
+      "MessageStream": "schedule"
+    });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 }
 
 exports.sendScheduleEmails = async (users, groupCode, callType) => {

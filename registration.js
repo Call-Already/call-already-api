@@ -37,8 +37,13 @@ exports.register = async (event) => {
   });
 
   try {
-    await sendWelcomeEmail(body.Nickname, body.Email, UserID);
-    return _200(); // Return data only after verification.
+    const welcomeEmailSuccess = await sendWelcomeEmail(body.Nickname, body.Email, UserID);
+    if (welcomeEmailSuccess) {
+      return _200();
+    } else {
+      console.log("Could not send Welcome email", error);
+      return _500(`Error sending Welcome email to ${body}`)
+    }
   } catch (error) {
     console.log("Could not send Welcome email", error);
     return _500(`Error sending Welcome email to ${body}`)
