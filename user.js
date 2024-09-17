@@ -1,7 +1,7 @@
 const Dynamo = require('./common/Dynamo');
 const { sendConfirmationEmail, sendScheduleEmails } = require('./common/Email');
 const { _200, _400, _404, _500 } = require('./common/Responses');
-const { getTTL } = require('./common/Utils');
+const { getTTL, incrementGroupsCreated, incrementGroupsJoined } = require('./common/Utils');
 const { validatePostResponsesParams, validateValidateGroupParams } = require('./common/Validation');
 
 const tableName = process.env.tableName;
@@ -68,7 +68,13 @@ exports.createGroup = async (event) => {
     return _500(`Error saving group of ID ${body.ID}`);
   });
 
-  return _200();
+  const incrementSuccess = await incrementGroupsCreated(body.Email);
+
+  if (incrementSuccess) {
+    return _200();
+  } else {
+    return _500();
+  }
 }
 
 exports.postResponses = async (event) => {
@@ -109,6 +115,15 @@ exports.postResponses = async (event) => {
     console.log("Error in Dynamo put", err);
     return _500(`Error saving responses ${body}`)
   });
+
+  // Increment the user's groups joined count if they are joining.
+  if (!body.IsGroupCreator) {
+    const incrementSuccess = await incrementGroupsJoined(body.Email);
+    if (!incrementSuccess) {
+      console.log("Error incrementing groups joined", body);
+      return _500(`Error incrementing groups joined ${body}`);
+    }
+  }
 
   const confirmationEmailSuccess = await sendConfirmationEmail(body.Nickname, body.Email, body.ID);
 

@@ -84,6 +84,12 @@ functions:
       - httpApi:
           path: /login-user
           method: post
+  getUser:
+    handler: registration.getUser
+    events:
+      - httpApi:
+          path: get-user
+          method: get
 
 custom:
   tableName: user-groups

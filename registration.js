@@ -104,3 +104,16 @@ exports.loginUser = async (event) => {
     return _404("Email does not exist");
   }
 }
+
+exports.getUser = async (event) => {
+  const queryParameters = event.queryStringParameters;
+
+  const Email = queryParameters.Email;
+
+  const entry = await Dynamo.getUser(Email, tableName).catch((err) => {
+    console.log("Error in Dynamo get", err);
+    return _500(`Error getting user ${body}`)
+  });
+
+  return _200(entry);
+}
