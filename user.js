@@ -1,6 +1,7 @@
 const Dynamo = require('./common/Dynamo');
-const { sendScheduleEmails } = require('./common/Email');
+const { sendConfirmationEmail, sendScheduleEmails } = require('./common/Email');
 const { _200, _400, _404, _500 } = require('./common/Responses');
+const { getTTL } = require('./common/Utils');
 const { validatePostResponsesParams, validateValidateGroupParams } = require('./common/Validation');
 
 const tableName = process.env.tableName;
@@ -27,9 +28,10 @@ exports.validateGroup = async (event) => {
     }
 
     const responseBody = {
-        Dates: entry.Dates,
-        UserNicknames: userNicknames,
-        NumUsers: entry.NumUsers,
+      Dates: entry.Dates,
+      UserNicknames: userNicknames,
+      NumUsers: entry.NumUsers,
+      CallType: entry.CallType,
     };
 
     return _200(responseBody);
@@ -50,11 +52,15 @@ exports.createGroup = async (event) => {
     return _400(`Group ${body.ID} already exists. Try making a group with a different code.`);
   }
 
+  const ttl = await getTTL();
+
   const entry = {
     ID: body.ID,
     Dates: body.Dates,
     NumUsers: body.NumUsers,
     ShowUsers: body.ShowUsers,
+    CallType: body.CallType,
+    TTL: ttl,
   };
 
   await Dynamo.put(entry, tableName).catch((err) => {
@@ -104,18 +110,27 @@ exports.postResponses = async (event) => {
     return _500(`Error saving responses ${body}`)
   });
 
-  // Handle max users being reached,
-  // send email with time confirmation to all.
-  if (entry.NumUsers === entry.Users.length) {
-    const commonTime = await sendScheduleEmails(entry.Users, body.ID);
-    return _200(commonTime);
-  }
+  const confirmationEmailSuccess = await sendConfirmationEmail(body.Nickname, body.Email, body.ID);
 
-  try {
-    // await sendConfirmationEmail(body.Nickname, body.Email, body.ID);
-    return _200();
-  } catch (error) {
-    console.log("Error sending confirmation email", error);
-    return _500(`Error sending confirmation email ${body}`)
+  if (confirmationEmailSuccess) {
+    // Handle max users being reached,
+    // send email with time confirmation to all.
+    if (entry.NumUsers === entry.Users.length) {
+      const scheduleEmailsSuccess = await sendScheduleEmails(entry.Users, body.ID, entry.CallType);
+
+      if (scheduleEmailsSuccess) {
+        return _200();
+      } else {
+        console.log("Error sending schedule emails", body);
+        return _500(`Error sending schedule emails ${body}`);
+      }
+    } else {
+      // We don't need to send schedule emails, so just reply with success.
+      return _200();
+    }
+  } else {
+    // Confirmation email failed to send
+    console.log("Error sending confirmation email", body);
+    return _500(`Error sending confirmation email ${body}`);
   }
 };

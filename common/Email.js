@@ -1,12 +1,15 @@
 var postmark = require("postmark");
+const { perfectScheduleCheck, imperfectScheduleCheck } = require("./Scheduling");
 
 const client = new postmark.ServerClient("2f2a9816-068f-4966-8e5c-dbc564094384");
 
 const fromEmail = "hi@mattyphillips.com";
 const NO_COMMON_TIME_MESSAGE = "No common time found";
+const PERFECT_CALL = "perfect";
+const IMPERFECT_CALL = "imperfect";
 
 exports.sendWelcomeEmail = async (nickname, email, userId) => {
-  client.sendEmailWithTemplate({
+  await client.sendEmailWithTemplate({
     "From": fromEmail,
     "To": email,
     "TemplateAlias": "welcome",
@@ -21,20 +24,39 @@ exports.sendWelcomeEmail = async (nickname, email, userId) => {
 }
 
 exports.sendConfirmationEmail = async (nickname, email, groupCode) => {
-  client.sendEmailWithTemplate({
+  try {
+    await client.sendEmailWithTemplate({
+      "From": fromEmail,
+      "To": email,
+      "TemplateAlias": "confirmation",
+      "TemplateModel": {
+        "nickname": nickname,
+        "group_code": groupCode,
+      },
+      "MessageStream": "confirmation"
+    });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
+const sendFailureEmail = async (nickname, email, groupCode) => {
+  return client.sendEmailWithTemplate({
     "From": fromEmail,
     "To": email,
-    "TemplateAlias": "confirmation",
+    "TemplateAlias": "failure",
     "TemplateModel": {
       "nickname": nickname,
       "group_code": groupCode,
     },
-    "MessageStream": "confirmation"
+    "MessageStream": "failure"
   });
 }
 
 const sendScheduleEmail = async (nickname, email, groupCode, localTime, timezone) => {
-  client.sendEmailWithTemplate({
+  return client.sendEmailWithTemplate({
     "From": fromEmail,
     "To": email,
     "TemplateAlias": "schedule",
@@ -48,53 +70,37 @@ const sendScheduleEmail = async (nickname, email, groupCode, localTime, timezone
   });
 }
 
-const perfectScheduleCheck = async (users) => {
-  let commonTime = "";
-  // Get and go through the first user's SelectedTimes
-  var firstUserTimes = users[0].SelectedTimes;
-  for (var i = 0; i < firstUserTimes.length; i++) {
-    commonTime = firstUserTimes[i];
-    // Scan the rest of the users' SelectedTimes for the CommonTime
-    for (var j = 1; j < users.length; j++) { // Off by 1 is here !!!
-      var otherUser = users[j];
-      var commonTimeFound = false;
-      // Check this user's SelectedTimes to see if it contains CommonTime
-      for (var k = 0; k < otherUser.SelectedTimes.length; k++) {
-        var selectedTime = otherUser.SelectedTimes[k];
-        if (selectedTime === commonTime) {
-          commonTimeFound = true;
-        }
-      }
-      // If this user did not have the CommonTime, CommonTime doesn't work.
-      // Break and try another CommonTime from the first user.
-      if (commonTimeFound === false) {
-        break;
-      }
-      // If we are are here, CommonTime still stands true.
-      // If we are also checking the last user, CommonTime works for all.
-      // That means all users have succcessfully selected CommonTime.
-      if (j === (users.length - 1)) { // users.length - 1 ?!?!
-        return commonTime;
-      }
-    }
-    // Next iteration here checks the next CommonTime from first user.
-  }
-  // If we reach here, no CommonTime was found amongst the users.
-  return NO_COMMON_TIME_MESSAGE;
-}
+exports.sendScheduleEmails = async (users, groupCode, callType) => {
 
-exports.sendScheduleEmails = async (users, groupCode) => {
-  // const commonTime = await perfectScheduleCheck(users);
-  // const commonTime = await perfectScoredScheduleCheck(users);
-  // const commonTime = await imperfectScoredScheduleCheck(users);
-  const commonTime = await perfectScheduleCheck(users);
-  if (commonTime === NO_COMMON_TIME_MESSAGE) {
-    // await sendFailureEmail
-  } else {
-    for (var i = 0; i < users.length; i++) {
-      // const localTime = moment timezone time
-      const user = users[i];
-      sendScheduleEmail(user.Nickname, user.Email, groupCode, commonTime, user.Timezone);
+  try {
+    // Get the best time from the user inputs
+    let commonTime;
+    if (callType === PERFECT_CALL) {
+      commonTime = await perfectScheduleCheck(users);
+    } else {
+      commonTime = await imperfectScheduleCheck(users);
     }
+    
+    // If the group asked for pefect scheduling, we must send
+    // a different email, Failure, when there was no common time
+    // among all of them. Otherwise, we send the best time.
+    if (commonTime === NO_COMMON_TIME_MESSAGE) {
+      for (var i = 0; i < users.length; i++) {
+        const user = users[i];
+        await sendFailureEmail(user.Nickname, user.Email, groupCode);
+      }
+    } else {
+      for (var i = 0; i < users.length; i++) {
+        const user = users[i];
+        const localTime = new Date(commonTime).toLocaleString('en-US', { 
+          timeZone: user.Timezone
+        });
+        await sendScheduleEmail(user.Nickname, user.Email, groupCode, localTime, user.Timezone);
+      }
+    }
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
   }
 }

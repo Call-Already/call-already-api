@@ -37,7 +37,7 @@ exports.register = async (event) => {
   });
 
   try {
-    // await sendWelcomeEmail(body.Nickname, body.Email, UserID);
+    await sendWelcomeEmail(body.Nickname, body.Email, UserID);
     return _200(); // Return data only after verification.
   } catch (error) {
     console.log("Could not send Welcome email", error);
