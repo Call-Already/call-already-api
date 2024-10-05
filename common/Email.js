@@ -1,7 +1,8 @@
 var postmark = require("postmark");
 const { perfectScheduleCheck, imperfectScheduleCheck } = require("./Scheduling");
 
-const client = new postmark.ServerClient("2f2a9816-068f-4966-8e5c-dbc564094384");
+const postmarkAppClientToken = process.env.postmarkAppClientToken;
+const client = new postmark.ServerClient(postmarkAppClientToken);
 
 const fromEmail = "hi@mattyphillips.com";
 const NO_COMMON_TIME_MESSAGE = "No common time found";

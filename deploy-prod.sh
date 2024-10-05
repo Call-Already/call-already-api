@@ -5,7 +5,7 @@ echo "2. Installing dependencies"
 npm install --omit=dev
 
 echo "3. Deploying"
-serverless deploy
+serverless deploy --stage prod
 
 echo "4. Reinstalling dev dependencies"
 npm install

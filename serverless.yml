@@ -41,6 +41,7 @@ provider:
     tableName: ${self:custom.tableName}
     registryTableName: ${self:custom.registryTableName}
     jwtSecretAccessToken: ${param:jwtSecretAccessToken}
+    postmarkAppClientToken: ${param:postmarkAppClientToken}
   iamRoleStatements:
     - Effect: Allow
       Action:
