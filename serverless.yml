@@ -23,6 +23,7 @@ package:
 ### DO NOT CHECK IN
 #
 # Uncomment this when locally testing
+#
 # plugins:
 #   - serverless-offline
 #
@@ -42,6 +43,8 @@ provider:
     registryTableName: ${self:custom.registryTableName}
     jwtSecretAccessToken: ${param:jwtSecretAccessToken}
     postmarkAppClientToken: ${param:postmarkAppClientToken}
+    whatsAppAccountSID: ${param:whatsAppAccountSID}
+    whatsAppAuthToken: ${param:whatsAppAuthToken}
   iamRoleStatements:
     - Effect: Allow
       Action:

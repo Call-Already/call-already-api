@@ -3,8 +3,10 @@ const { sendConfirmationEmail, sendScheduleEmails } = require('./common/Email');
 const { _200, _400, _404, _500 } = require('./common/Responses');
 const { getTTL, incrementGroupsCreated, incrementGroupsJoined } = require('./common/Utils');
 const { validatePostResponsesParams, validateValidateGroupParams } = require('./common/Validation');
+const { sendConfirmationWhatsApp, sendScheduleWhatsApps } = require('./common/WhatsApp');
 
 const tableName = process.env.tableName;
+const registryTableName = process.env.registryTableName;
 
 exports.validateGroup = async (event) => {
   const queryParameters = event.queryStringParameters;
@@ -99,12 +101,16 @@ exports.postResponses = async (event) => {
   }
   users = users.filter(user => user.Nickname !== body.Nickname);
 
+  const userEntry = await Dynamo.getUser(body.Email, registryTableName);
+  const phoneNumber = userEntry.PhoneNumber;
+
   const user = {
     Nickname: body.Nickname,
     Email: body.Email,
     Timezone: body.Timezone,
     SelectedTimes: body.SelectedTimes,
     IsGroupCreator: body.IsGroupCreator,
+    PhoneNumber: phoneNumber,
   };
 
   // After validation assumes user doesn't exist yet
@@ -125,6 +131,14 @@ exports.postResponses = async (event) => {
     }
   }
 
+  if (phoneNumber) {
+    const confirmationWhatsAppSuccess = await sendConfirmationWhatsApp(phoneNumber, body.Nickname, body.ID);
+    if (!confirmationWhatsAppSuccess) {
+      console.log("Error sending schedule WhatsApp", body);
+      return _500(`Error sending schedule WhatsApp ${body}`);
+    }
+  }
+
   const confirmationEmailSuccess = await sendConfirmationEmail(body.Nickname, body.Email, body.ID);
 
   if (confirmationEmailSuccess) {
@@ -132,12 +146,13 @@ exports.postResponses = async (event) => {
     // send email with time confirmation to all.
     if (entry.NumUsers === entry.Users.length) {
       const scheduleEmailsSuccess = await sendScheduleEmails(entry.Users, body.ID, entry.CallType);
+      const scheduleWhatsAppSuccess = await sendScheduleWhatsApps(entry.Users, body.ID, entry.CallType)
 
-      if (scheduleEmailsSuccess) {
+      if (scheduleEmailsSuccess && scheduleWhatsAppSuccess) {
         return _200();
       } else {
-        console.log("Error sending schedule emails", body);
-        return _500(`Error sending schedule emails ${body}`);
+        console.log("Error sending schedule comms", body);
+        return _500(`Error sending schedule comms ${body}`);
       }
     } else {
       // We don't need to send schedule emails, so just reply with success.

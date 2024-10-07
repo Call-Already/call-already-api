@@ -27,6 +27,7 @@ exports.register = async (event) => {
     UserID: UserID,
     Nickname: body.Nickname,
     Email: body.Email,
+    PhoneNumber: body.PhoneNumber,
     Password: hash,
     IsVerified: false,
   };
