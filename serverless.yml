@@ -94,6 +94,18 @@ functions:
       - httpApi:
           path: /get-user
           method: get
+  deleteUser:
+    handler: registration.deleteUser
+    events:
+      - httpApi:
+          path: /user
+          method: delete
+  updateUser:
+    handler: registration.updateUser
+    events:
+      - httpApi:
+          path: /user
+          method: patch
 
 custom:
   tableName: user-groups

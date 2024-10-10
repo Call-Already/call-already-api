@@ -28,6 +28,7 @@ exports.register = async (event) => {
     Nickname: body.Nickname,
     Email: body.Email,
     PhoneNumber: body.PhoneNumber,
+    IsOptedInToWhatsApp: body.IsOptedInToWhatsApp,
     Password: hash,
     IsVerified: false,
   };
@@ -117,4 +118,49 @@ exports.getUser = async (event) => {
   });
 
   return _200(entry);
+}
+
+exports.deleteUser = async (event) => {
+  const queryParameters = event.queryStringParameters;
+
+  const Email = queryParameters.Email;
+
+  await Dynamo.delete(Email, tableName);
+
+  return _200();
+}
+
+exports.updateUser = async (event) => {
+  const body = JSON.parse(event.body);
+
+  console.log(body);
+
+  let phoneNumber;
+  if (!body.PhoneNumber) {
+    phoneNumber = "";
+  } else {
+    phoneNumber = body.PhoneNumber;
+  }
+
+  const AttributeUpdates = {
+    Nickname: {
+      Action: "PUT",
+      Value: body.Nickname,
+    },
+    PhoneNumber: {
+      Action: "PUT",
+      Value: phoneNumber,
+    },
+    IsOptedInToWhatsApp: {
+      Action: "PUT",
+      Value: body.IsOptedInToWhatsApp,
+    },
+  };
+
+  await Dynamo.update(body.Email, AttributeUpdates, tableName).catch((err) => {
+    console.log("Error in Dynamo update", err);
+    return _500(`Error update user ${body}`)
+  });
+
+  return _200();
 }

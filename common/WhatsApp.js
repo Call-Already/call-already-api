@@ -71,7 +71,7 @@ exports.sendScheduleWhatsApps = async (users, groupCode, callType) => {
       for (var i = 0; i < users.length; i++) {
         const user = users[i];
         // Only send the schedule whatsApp if the user has a phone number.
-        if (user.PhoneNumber) {
+        if (user.PhoneNumber && user.IsOptedInToWhatsApp) {
           const localTime = new Date(commonTime).toLocaleString('en-US', { 
             timeZone: user.Timezone
           });

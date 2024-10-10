@@ -49,10 +49,33 @@ const Dynamo = {
       Item: data,
     }
 
-    console.log(params);
-
     await documentClient
       .put(params);
+  },
+
+  async delete(key, TableName) {
+    var params = {
+      TableName,
+      Key: {
+        Email: key,
+      }
+    };
+
+    await documentClient
+      .delete(params);
+  },
+
+  async update(Key, AttributeUpdates, TableName) {
+
+    const params = {
+      TableName,
+      Key: {
+        Email: Key,
+      },
+      AttributeUpdates,
+    }
+
+    await documentClient.update(params)
   }
 };
 
