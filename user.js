@@ -103,6 +103,7 @@ exports.postResponses = async (event) => {
 
   const userEntry = await Dynamo.getUser(body.Email, registryTableName);
   const phoneNumber = userEntry.PhoneNumber;
+  const isOptedInToWhatsApp = userEntry.IsOptedInToWhatsApp;
 
   const user = {
     Nickname: body.Nickname,
@@ -111,6 +112,7 @@ exports.postResponses = async (event) => {
     SelectedTimes: body.SelectedTimes,
     IsGroupCreator: body.IsGroupCreator,
     PhoneNumber: phoneNumber,
+    IsOptedInToWhatsApp: isOptedInToWhatsApp,
   };
 
   // After validation assumes user doesn't exist yet
@@ -131,7 +133,7 @@ exports.postResponses = async (event) => {
     }
   }
 
-  if (phoneNumber) {
+  if (phoneNumber && isOptedInToWhatsApp) {
     const confirmationWhatsAppSuccess = await sendConfirmationWhatsApp(phoneNumber, body.Nickname, body.ID);
     if (!confirmationWhatsAppSuccess) {
       console.log("Error sending schedule WhatsApp", body);

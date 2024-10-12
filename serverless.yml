@@ -24,14 +24,15 @@ package:
 #
 # Uncomment this when locally testing
 #
-# plugins:
-#   - serverless-offline
+plugins:
+  - serverless-offline
 #
 ### DO NOT CHECK IN
 ### DO NOT CHECK IN
 ### DO NOT CHECK IN
 ### DO NOT CHECK IN
 ### DO NOT CHECK IN
+  - serverless-plugin-aws-alerts
 
 provider:
   name: aws
@@ -115,7 +116,19 @@ custom:
       - "@aws-sdk/client-dynamodb"
       - "@aws-sdk/lib-dynamodb"
       - "@aws-sdk/util-dynamodb"
-
+  alerts:
+    stages:
+      - prod
+    topics:
+      alarm:
+        topic: call-already-api-prod-alerts-alarm
+        notifications:
+          - protocol: email
+            endpoint: callalreadyprod@gmail.com
+    alarms:
+      - functionErrors
+      - functionThrottles
+    
 resources:
   Resources:
     UsersDynamoDbTable:
