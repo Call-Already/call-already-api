@@ -25,7 +25,7 @@ package:
 # Uncomment this when locally testing
 #
 plugins:
-  - serverless-offline
+# - serverless-offline
 #
 ### DO NOT CHECK IN
 ### DO NOT CHECK IN
